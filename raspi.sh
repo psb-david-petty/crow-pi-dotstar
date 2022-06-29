@@ -7,8 +7,8 @@
 
 # Check whether 'sudo raspi-config' has been run.
 read -p "Have you completed \"sudo raspi-config\" [Y/n]? " yn
-msg="Advanced > Expand Filesystem and Interface > SSH, SPI, & I2C."
-case "$yn$ in
+msg="raspi-config: Advanced > Expand Filesystem and Interface > SSH, SPI, & I2C."
+case "$yn" in
     n*) echo "$msg"; exit ;;
     N*) echo "$msg"; exit ;;
 esac
@@ -39,7 +39,7 @@ pip3 install --upgrade adafruit-python-shell
 echo "After roboot, run \"python3 blinkatest.py\""
 echo "After roboot, run \"sudo pip3 install adafruit-circuitpython-dotstar\""
 echo "After roboot, run \"sudo apt-get install emacs -y\""
-
+exit
 # Run RaspberryPi Blinka installer script.
 wget https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/master/raspi-blinka.py
 python3 raspi-blinka.py
