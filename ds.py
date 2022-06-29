@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # Take n (number of DotStar LEDs) from second command-line argument.
     if len(sys.argv) > 2: n = int(sys.argv[2])
 
-    dots = dotstar.DotStar(board.SCK, board.MOSI, LEDS, brightness=0.2)
+    dots = dotstar.DotStar(board.SCK, board.MOSI, max(n, LEDS), brightness=0.2)
     try:
         print(f" rand(dots,n={n},d={d}) ({int(time.time()) % 100:2d}s)")
         rand(dots, n=n, d=d)
