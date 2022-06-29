@@ -1,2 +1,2 @@
 # crow-pi-dotstar
-CrowPi code for Adafruit CircuitPython DotStar
+CrowPi Adafruit CircuitPython DotStar code.
