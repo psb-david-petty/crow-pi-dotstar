@@ -1,8 +1,8 @@
-#!/usr/bin/env sh
+!/usr/bin/env bash
 #
 # raspi.sh
 #
-# run this with "sudo sh -x raspi.sh"
+# run this with "sudo bash raspi.sh"
 #
 
 # Check whether 'sudo raspi-config' has been run.
@@ -12,9 +12,6 @@ case "$yn" in
     n*) echo "$msg"; exit ;;
     N*) echo "$msg"; exit ;;
 esac
-
-set -x
-cd $HOME
 
 # Update raspbian.
 dpkg --configure -a
@@ -33,15 +30,20 @@ pip3 install --upgrade --force-reinstall pip setuptools
 usermod -a -G spi,gpio pi
 python3 -m pip install --upgrade luma.led_matrix
 
-# Clone CrowPi drivers and examples.
-git clone https://github.com/Elecrow-RD/CrowPi.git
-SETUP='
-    CrowPi/Drivers/Adafruit_Python_CharLCD/
-    CrowPi/Drivers/Adafruit_Python_DHT/
-    CrowPi/Drivers/Adafruit_Python_LED_Backpack/
-    CrowPi/Drivers/RFID/SPI-Py/'
+# Clone CrowPi drivers and examples and run /setup.py in some directories.
+PI=/home/pi
+rm -rf $PI/CrowPi
+git -C $PI clone https://github.com/Elecrow-RD/CrowPi.git
+git -C $PI/CrowPi/Drivers clone https://github.com/adafruit/Adafruit_Python_GPIO.git
+# TODO: $PI/CrowPi/Drivers directories w/ setup.py cannot have spaces
+# TODO: special case: do NOT run setup.py in luma diretories
+# TODO: special case: DHT needs --force-pi
+SETUP=`find $PI/CrowPi/Drivers/ \
+    \( -name "setup.py" -type f \) -print \
+    |grep -iv "luma" \
+    |xargs -I {} dirname {}`
 for D in $SETUP; do
-    cd $HOME/$D
+    cd $D
     flag=''
     if [[ "$D" == *"DHT"* ]]; then
 	flag='--force-pi'
@@ -53,12 +55,19 @@ done
 # https://learn.adafruit.com/circuitpython-on-raspberrypi-linux/installing-circuitpython-on-raspberry-pi
 pip3 install --upgrade adafruit-python-shell
 
-# Install CircuitPython DotStar
-# https://docs.circuitpython.org/projects/dotstar/en/latest/
 # Echo messages for after reboot.
-echo "After roboot, run \"python3 blinkatest.py\""
-echo "After roboot, run \"sudo pip3 install adafruit-circuitpython-dotstar\""
-echo "After roboot, run \"sudo apt-get install emacs -y\""
+TODO='
+    python3 blinkatest.py :
+    sudo pip3 install adafruit-circuitpython-dotstar :
+    sudo apt-get install emacs -y :'
+python3 <<EOF
+for s in [s.strip() for s in """$TODO""".split(':') if s]:
+    print(f'After reboot, "{s}"')
+EOF
+
+# Install CircuitPython DotStar after reboot
+# https://docs.circuitpython.org/projects/dotstar/en/latest/
+# Install emacs after reboot and set it to the git core.editor
 sleep 5s
 
 # RaspberryPi Blinka installer script.
@@ -67,4 +76,5 @@ python3 raspi-blinka.py
 
 # REBOOT...
 
-# After reboot, run "sudo pip3 install adafruit-circuitpython-dotstar" and anything else...
+# After reboot, run "sudo pip3 install adafruit-circuitpython-dotstar"
+# and anything else in $TODO
